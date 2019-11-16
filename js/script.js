@@ -10,8 +10,16 @@ const $designSelectDropdown = $('#design');
 const $colorSelectDropdown = $('#color');
 let $colorDropdownOptions = $('#color option');
 
+//Activities
+const $fieldsetActivities = $('.activities');
+const $checkBoxes = $('.activities input');
+
 // Declare variables
 let completeColorDropdownOptions = [];
+let activityCost = 0;
+let dateString = '';
+let tempDateString = '';
+let costLabel = null;
 
 // Regex expressions
 const regex = /Puns/i;
@@ -77,6 +85,14 @@ function setupInitialView()
     $colorSelectDropdown.hide();
     $colorSelectDropdown.prev().hide();
 
+    // Event listener for activites
+
+    $fieldsetActivities.on('change', function(event){
+
+        updateActivitiesEventSelections(event);
+        
+    });
+
 }
 
 function updateViewForOtherTitle(showTitleInput)
@@ -98,7 +114,11 @@ function updateViewForOtherTitle(showTitleInput)
 
 function updateColorSelectDropdown()
 {
+    // Get the selection option from the dropdown
+
     var optionText = $("#design option:selected").text();
+
+    // Check the text and update the color dropdown option appropriately
 
     if (optionText === 'Theme - JS Puns') 
     {
@@ -123,6 +143,8 @@ function updateColorSelectDropdown()
             }
         }
 
+        // Show the dropdown selection and the label above
+
         $colorSelectDropdown.show();
         $colorSelectDropdown.prev().show();
 
@@ -140,6 +162,8 @@ function updateColorSelectDropdown()
 
         // Add the first choice telling the user to select a theme
         $colorSelectDropdown.append(completeColorDropdownOptions[0]);
+
+        // Hide the dropdown selection and the label above
 
         $colorSelectDropdown.hide();
         $colorSelectDropdown.prev().hide();
@@ -168,11 +192,81 @@ function updateColorSelectDropdown()
             }
         }
 
+        // Show the dropdown selection and the label above
+
         $colorSelectDropdown.show();
         $colorSelectDropdown.prev().show();
         
     }
 
+}
+
+function updateActivitiesEventSelections(event)
+{
+
+    if ($(event.target).prop('checked')) 
+    {
+        console.log('checkbox checked');
+        console.log(event.target.name);
+        activityCost += parseInt($(event.target).data('cost').match(/\d+/g));
+        dateString = $(event.target).data('dayAndTime');
+        console.log(dateString);
+        console.log('Activity Cost: ' + activityCost);
+
+        if (costLabel === null) 
+        {
+            costLabel = $('<label>Total: $' + activityCost + '</label>');
+            $fieldsetActivities.append(costLabel);
+        }
+        else
+        {
+            $(costLabel).html('Total: $' + activityCost);
+        }
+
+        for (let index = 0; index < $checkBoxes.length; index++) 
+        {   
+            tempDateString = $($checkBoxes[index]).data('dayAndTime');
+
+            if (dateString === tempDateString && event.target !== $checkBoxes[index]) 
+            {
+                $checkBoxes[index].disabled = true;
+                $($checkBoxes[index]).parent().addClass('notSelectable');
+            }
+            
+        }
+        
+    }
+    else
+    {
+        console.log('checkbox unchecked');
+        console.log(event.target.name);
+        activityCost -= parseInt($(event.target).data('cost').match(/\d+/g));
+        dateString = $(event.target).data('dayAndTime');
+        console.log(dateString);
+        console.log('Activity Cost: ' + activityCost);
+
+        if (activityCost === 0) 
+        {
+            $fieldsetActivities.children().last().remove();
+            costLabel = null;
+        }
+        else
+        {
+            $(costLabel).html('Total: $' + activityCost);
+        }
+
+        for (let index = 0; index < $checkBoxes.length; index++) 
+        {   
+            tempDateString = $($checkBoxes[index]).data('dayAndTime');
+
+            if (dateString === tempDateString && event.target !== $checkBoxes[index]) 
+            {
+                $checkBoxes[index].disabled = false;
+                $($checkBoxes[index]).parent().removeClass('notSelectable');
+            }
+            
+        }
+    }
 }
 
 

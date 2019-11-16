@@ -1,32 +1,47 @@
 // Declare DOM elements using jquery
 
-//Basic Info
-const $inputName = $('#name');
-const $userTitleSelectDropdown = $('#title');
-const $otherTitleInput = $('#other-title');
+    //Basic Info
+    const $inputName = $('#name');
+    const $userTitleSelectDropdown = $('#title');
+    const $otherTitleInput = $('#other-title');
 
-//T-Shirt Info
-const $designSelectDropdown = $('#design');
-const $colorSelectDropdown = $('#color');
-let $colorDropdownOptions = $('#color option');
+    //T-Shirt Info
+    const $designSelectDropdown = $('#design');
+    const $colorSelectDropdown = $('#color');
+    let $colorDropdownOptions = $('#color option');
 
-//Activities
-const $fieldsetActivities = $('.activities');
-const $checkBoxes = $('.activities input');
+    //Activities
+    const $fieldsetActivities = $('.activities');
+    const $checkBoxes = $('.activities input');
 
 // Declare variables
-let completeColorDropdownOptions = [];
-let activityCost = 0;
-let dateString = '';
-let tempDateString = '';
-let costLabel = null;
+
+    let completeColorDropdownOptions = [];
+    let activityCost = 0;
+    let dateString = '';
+    let tempDateString = '';
+    let costLabel = null;
 
 // Regex expressions
-const regex = /Puns/i;
-const regex2 = /select/i;
+    const regex = /Puns/i;
+    const regex2 = /select/i;
 
 setupInitialView();
 
+   /***************************************************************************************************************
+      function setupInitialView
+      Parameters: N/A
+      returns: N/A
+
+      Description: 
+
+      Setup initial view setsup the user to start filling out the form quickly by putting focus on the first input
+      field of name. 
+
+      It also hides specific fields not needed and creates the event listeners for the form elements that the user
+      will interact with.
+
+   ***************************************************************************************************************/
 
 function setupInitialView()
 {
@@ -39,61 +54,72 @@ function setupInitialView()
 
     // Add event listeners to select dropdowns
     
-    // Event listener for userTitleSelectDropdown
+        // Event listener for userTitleSelectDropdown
 
-    $userTitleSelectDropdown.on('change' ,function(){
+        $userTitleSelectDropdown.on('change' ,function(){
 
-        // Get the selected value for user title
+            // Get the selected value for user title
 
-        let optionText = $("#title option:selected").text();
+            let optionText = $("#title option:selected").text();
 
-        // If the selected user title is Other, show the additional input fields for the user to fill out. If not
-        // then hide the input fields as well.
+            // If the selected user title is Other, show the additional input fields for the user to fill out. If not
+            // then hide the input fields as well.
 
-        if (optionText === 'Other') 
+            if (optionText === 'Other') 
+            {
+                updateViewForOtherTitle(true);   
+            }
+            else
+            {
+                updateViewForOtherTitle(false);
+            }
+            
+        });
+
+        // Event listener for designSelectDropdown
+        $designSelectDropdown.on('change' ,function(){
+
+            updateColorSelectDropdown();
+            
+        });
+
+        // Store index[0] in array before removing from list
+        completeColorDropdownOptions.push($colorDropdownOptions.eq(0));
+
+        // Remove all color choices from color dropdown list
+        for (let index = 1; index < $colorDropdownOptions.length; index++) 
         {
-            updateViewForOtherTitle(true);   
+            // Store option in array before removing from list
+            completeColorDropdownOptions.push($colorDropdownOptions.eq(index));
+
+            // Remove from dropdown list
+            $colorDropdownOptions.eq(index).remove();
         }
-        else
-        {
-            updateViewForOtherTitle(false);
-        }
-        
-    });
 
-    // Event listener for designSelectDropdown
-    $designSelectDropdown.on('change' ,function(){
+        // Hide color dropdown input and label until a design is selected
+        $colorSelectDropdown.hide();
+        $colorSelectDropdown.prev().hide();
 
-        updateColorSelectDropdown();
-        
-    });
+        // Event listener for activites
 
-    // Store index[0] in array before removing from list
-    completeColorDropdownOptions.push($colorDropdownOptions.eq(0));
+        $fieldsetActivities.on('change', function(event){
 
-    // Remove all color choices from color dropdown list
-    for (let index = 1; index < $colorDropdownOptions.length; index++) 
-    {
-        // Store option in array before removing from list
-        completeColorDropdownOptions.push($colorDropdownOptions.eq(index));
-
-        // Remove from dropdown list
-        $colorDropdownOptions.eq(index).remove();
-    }
-
-    // Hide color dropdown input and label until a design is selected
-    $colorSelectDropdown.hide();
-    $colorSelectDropdown.prev().hide();
-
-    // Event listener for activites
-
-    $fieldsetActivities.on('change', function(event){
-
-        updateActivitiesEventSelections(event);
-        
-    });
+            updateActivitiesEventSelections(event);
+            
+        });
 
 }
+
+   /***************************************************************************************************************
+      function updateViewForOtherTitle
+      Parameters: showTitleInput - Boolean
+      returns: N/A
+
+      Description: 
+
+      if showTitleInput is true, this code will display the Other Title input label and input text field.
+
+   ***************************************************************************************************************/
 
 function updateViewForOtherTitle(showTitleInput)
 {
@@ -111,6 +137,17 @@ function updateViewForOtherTitle(showTitleInput)
         $otherTitleInput.prev().hide();
     }
 }
+
+   /***************************************************************************************************************
+      function updateColorSelectDropdown
+      Parameters: N/A
+      returns: N/A
+
+      Description: 
+
+      This code will update the color selection dropdown based on the selection of the design dropdown list.
+
+   ***************************************************************************************************************/
 
 function updateColorSelectDropdown()
 {
@@ -201,17 +238,29 @@ function updateColorSelectDropdown()
 
 }
 
+   /***************************************************************************************************************
+      function updateActivitiesEventSelections
+      Parameters: event - event 
+      returns: N/A
+
+      Description: 
+
+      This function will update the activites event selection list based on the following:
+
+      - if an activity is selected that has a conflicting activity the conflicting activity will be not selectable.
+      - as activities are selected, the running cost will be updated. 
+           * if the cost is zero the total is not displayed
+
+   ***************************************************************************************************************/
+
 function updateActivitiesEventSelections(event)
 {
 
     if ($(event.target).prop('checked')) 
     {
-        console.log('checkbox checked');
-        console.log(event.target.name);
+
         activityCost += parseInt($(event.target).data('cost').match(/\d+/g));
         dateString = $(event.target).data('dayAndTime');
-        console.log(dateString);
-        console.log('Activity Cost: ' + activityCost);
 
         if (costLabel === null) 
         {
@@ -238,12 +287,8 @@ function updateActivitiesEventSelections(event)
     }
     else
     {
-        console.log('checkbox unchecked');
-        console.log(event.target.name);
         activityCost -= parseInt($(event.target).data('cost').match(/\d+/g));
         dateString = $(event.target).data('dayAndTime');
-        console.log(dateString);
-        console.log('Activity Cost: ' + activityCost);
 
         if (activityCost === 0) 
         {

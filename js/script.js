@@ -5,6 +5,8 @@
     const $userTitleSelectDropdown = $('#title');
     const $otherTitleInput = $('#other-title');
 
+    const $emailInput = $('fieldset #mail');
+
     //T-Shirt Info
     const $designSelectDropdown = $('#design');
     const $colorSelectDropdown = $('#color');
@@ -14,6 +16,18 @@
     const $fieldsetActivities = $('.activities');
     const $checkBoxes = $('.activities input');
 
+    //Payment Info
+    const $creditCardDiv = $('fieldset #credit-card');
+
+        // sub fields
+        const $creditCardNumberInput = $('fieldset #cc-num');
+        const $creditCardZipInput = $('fieldset #zip');
+        const $creditCardCvvInput = $('fieldset #cvv');
+
+    const $paypalDiv = $('fieldset #paypal');
+    const $bitcoinDiv = $('fieldset #bitcoin');
+    const $paymentSelectDropdown = $('fieldset #payment');
+
 // Declare variables
 
     let completeColorDropdownOptions = [];
@@ -22,9 +36,21 @@
     let tempDateString = '';
     let costLabel = null;
 
+    let emailToolTipText = "Example: example@gmail.com";
+    let ccNumToolTipText = "Must contain 13-16 numbers";
+    let ccZipToolTipText = "Must contain 5 numbers";
+    let ccCvvToolTipText = "Must contain 3 numbers (i.e. 123)";
+
 // Regex expressions
     const regex = /Puns/i;
     const regex2 = /select/i;
+
+    const regexName = /[A-Z][a-z]/i;
+    const regexEmail = /^[^@]+@[^@.]+\.[a-z]+$/i;
+
+    const regexCCNum = /\b\d{13,16}\b/i;
+    const regexCCZip = /\b\d{5}\b/i;
+    const regexCCCvv = /\b\d{3}\b/i;
 
 setupInitialView();
 
@@ -52,6 +78,11 @@ function setupInitialView()
     $otherTitleInput.hide();
     $otherTitleInput.prev().hide();
 
+    // Hide payement information
+    $creditCardDiv.hide();
+    $paypalDiv.hide();
+    $bitcoinDiv.hide();
+
     // Add event listeners to select dropdowns
     
         // Event listener for userTitleSelectDropdown
@@ -77,28 +108,12 @@ function setupInitialView()
         });
 
         // Event listener for designSelectDropdown
+
         $designSelectDropdown.on('change' ,function(){
 
             updateColorSelectDropdown();
             
         });
-
-        // Store index[0] in array before removing from list
-        completeColorDropdownOptions.push($colorDropdownOptions.eq(0));
-
-        // Remove all color choices from color dropdown list
-        for (let index = 1; index < $colorDropdownOptions.length; index++) 
-        {
-            // Store option in array before removing from list
-            completeColorDropdownOptions.push($colorDropdownOptions.eq(index));
-
-            // Remove from dropdown list
-            $colorDropdownOptions.eq(index).remove();
-        }
-
-        // Hide color dropdown input and label until a design is selected
-        $colorSelectDropdown.hide();
-        $colorSelectDropdown.prev().hide();
 
         // Event listener for activites
 
@@ -107,6 +122,57 @@ function setupInitialView()
             updateActivitiesEventSelections(event);
             
         });
+
+        // Event listener for payments
+
+        $paymentSelectDropdown.on('change', function(event){
+
+            updatePaymentInformation();
+            
+        });
+
+        // Event listener for input fields
+
+        $emailInput.on("input", createListener(isValidEmail));
+        $creditCardNumberInput.on("input", createListener(isValidCCNum));
+        $creditCardZipInput.on("input", createListener(isValidZip));
+        $creditCardCvvInput.on("input", createListener(isValidCCV));
+
+        // This event listener is used to redisplay the tool tip when the input gains focus
+
+        $emailInput.on("focusin", onFocusListener(isValidEmail));
+        $creditCardNumberInput.on("focusin", onFocusListener(isValidCCNum));
+        $creditCardZipInput.on("focusin", onFocusListener(isValidZip));
+        $creditCardCvvInput.on("focusin", onFocusListener(isValidCCV));
+
+        // This event listener is used to hide the tool tip when the input loses focus
+
+        $emailInput.on("focusout", offFocusListener());
+        $creditCardNumberInput.on("focusout", offFocusListener());
+        $creditCardZipInput.on("focusout", offFocusListener());
+        $creditCardCvvInput.on("focusout", offFocusListener());
+
+    // Store index[0] in array before removing from list
+    completeColorDropdownOptions.push($colorDropdownOptions.eq(0));
+
+    // Remove all color choices from color dropdown list
+    for (let index = 1; index < $colorDropdownOptions.length; index++) 
+    {
+        // Store option in array before removing from list
+        completeColorDropdownOptions.push($colorDropdownOptions.eq(index));
+
+        // Remove from dropdown list
+        $colorDropdownOptions.eq(index).remove();
+    }
+
+    // Hide color dropdown input and label until a design is selected
+    $colorSelectDropdown.hide();
+    $colorSelectDropdown.prev().hide();
+
+    // Make credit card the selected payment option
+
+    $paymentSelectDropdown.val('Credit Card');
+    updatePaymentInformation();
 
 }
 
@@ -239,6 +305,216 @@ function updateColorSelectDropdown()
 }
 
    /***************************************************************************************************************
+      function updatePaymentInformation
+      Parameters: N/A
+      returns: N/A
+
+      Description: 
+
+      This code will update the dislay with the selection from the user for the payment option.
+
+   ***************************************************************************************************************/
+
+function updatePaymentInformation()
+{
+    // Get the selection option from the dropdown
+
+    var optionText = $("#payment option:selected").text();
+
+    if (optionText === "Credit Card") 
+    {
+        $creditCardDiv.show();
+        $paypalDiv.hide();
+        $bitcoinDiv.hide();
+    }
+    else if (optionText === 'Bitcoin')
+    {
+        $bitcoinDiv.show();
+        $creditCardDiv.hide();
+        $paypalDiv.hide();
+    } 
+    else if (optionText === "PayPal")
+    {
+        $paypalDiv.show();
+        $creditCardDiv.hide();
+        $bitcoinDiv.hide();
+    }
+    else 
+    {
+        $creditCardDiv.hide();
+        $paypalDiv.hide();
+        $bitcoinDiv.hide();
+    }
+    
+
+}
+
+   /***************************************************************************************************************
+      function showOrHideTip
+      Parameters: show - boolean
+                  element - dom element that is shown or not
+      returns: N/A
+
+      Description: 
+
+      This code will show or hide the tool tip for the corresponding input
+
+   ***************************************************************************************************************/
+
+function showOrHideTip(show, element) 
+{
+  // show element when show is true, hide when false
+  if (show) 
+  {
+    element.style.display = "inline-block";
+  } 
+  else 
+  {
+    element.style.display = "none";
+  }
+}
+
+   /***************************************************************************************************************
+      function multiple
+      Parameters: regex - regular expression
+      returns: N/A
+
+      Description: 
+
+      these functions will compare the input text vs the regex and see if it matches the pattern needed or not.
+
+   ***************************************************************************************************************/
+
+    function isValidEmail(email) 
+    {
+        return regexEmail.test(email);
+    }
+
+    function isValidCCNum(ccNum) 
+    {
+        return regexCCNum.test(ccNum);
+    }
+
+    function isValidZip(zip) 
+    {
+        return regexCCZip.test(zip);
+    }
+
+    function isValidCCV(ccv) 
+    {
+        return regexCCCvv.test(ccv);
+    }
+
+    function createListener(validator) 
+    {
+        return e => {
+            
+            const text = e.target.value;
+            const valid = validator(text);
+
+            let toolTipText = '';
+
+            if (valid) 
+            {
+                e.target.style.background = '#fff';
+            } 
+            else 
+            {
+                e.target.style.background = '#fd9898';
+            }
+
+            const showTip = !valid;
+
+            if (text === '') 
+            {
+                toolTipText = 'Input is empty, please type the needed information.'
+
+            } else 
+            {
+                if (e.target.id === 'mail') 
+                {
+                    toolTipText = emailToolTipText;
+                } 
+                else if (e.target.id === 'cc-num')
+                {
+                    toolTipText = ccNumToolTipText;
+                }
+                else if (e.target.id === 'zip') 
+                {
+                    toolTipText = ccZipToolTipText;
+                }
+                else if (e.target.id === 'cvv')
+                {
+                    toolTipText = ccCvvToolTipText;
+                }
+            }
+
+            const tooltip = e.target.nextElementSibling;
+
+            tooltip.textContent = toolTipText;
+
+            showOrHideTip(showTip, tooltip);
+        };
+    }
+
+    function onFocusListener(validator)
+    {
+        return e => {
+            const text = e.target.value;
+            const valid = validator(text);
+
+            if (valid) 
+            {
+                e.target.style.background = '#fff';
+            } 
+            else 
+            {
+                e.target.style.background = '#fd9898';
+            }
+
+            const showTip = !valid;
+
+            if (text === '') 
+            {
+                toolTipText = 'Input is empty, please type the needed information.'
+
+            } else 
+            {
+                if (e.target.id === 'mail') 
+                {
+                    toolTipText = emailToolTipText;
+                } 
+                else if (e.target.id === 'cc-num')
+                {
+                    toolTipText = ccNumToolTipText;
+                }
+                else if (e.target.id === 'zip') 
+                {
+                    toolTipText = ccZipToolTipText;
+                }
+                else if (e.target.id === 'cvv')
+                {
+                    toolTipText = ccCvvToolTipText;
+                }
+            }
+
+            const tooltip = e.target.nextElementSibling;
+
+            tooltip.textContent = toolTipText;
+
+            showOrHideTip(showTip, tooltip);
+        };
+    }
+
+    function offFocusListener()
+    {
+        return e => {
+            const tooltip = e.target.nextElementSibling;
+            showOrHideTip(false, tooltip);
+        };
+    }
+
+   /***************************************************************************************************************
       function updateActivitiesEventSelections
       Parameters: event - event 
       returns: N/A
@@ -264,7 +540,7 @@ function updateActivitiesEventSelections(event)
 
         if (costLabel === null) 
         {
-            costLabel = $('<label>Total: $' + activityCost + '</label>');
+            costLabel = $('<label class="darkBlue">Total: $' + activityCost + '</label>');
             $fieldsetActivities.append(costLabel);
         }
         else

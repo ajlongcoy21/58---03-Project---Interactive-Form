@@ -24,6 +24,7 @@
         
         <label for="mail">Email:</label>
         <input type="email" id="mail" name="user-email">
+        <span class="tool-tip">Example: example@gmail.com</span>
         
         <label for="title">Job Role:</label>
         <select id="title" name="user-title">
@@ -120,17 +121,20 @@
 
           <div class="col-6 col">
             <label for="cc-num">Card Number:</label>
-        	  <input id="cc-num" name="user-cc-num" type="text">
+            <input id="cc-num" name="user-cc-num" type="text">
+            <span class="tool-tip">Must contain 16 numbers</span>
           </div>
 
           <div class="col-3 col">
             <label for="zip">Zip Code:</label>
             <input id="zip" name="user-zip" type="text"> 
+            <span class="tool-tip">Must contain 5 numbers</span> 
           </div>
 
           <div class="col-3 col">
             <label for="cvv">CVV:</label>
-            <input id="cvv" name="user-cvv" type="text"> 
+            <input id="cvv" name="user-cvv" type="text">
+            <span class="tool-tip">Must contain 3 numbers (i.e. 123)</span>
           </div>
 
           <label for="exp-month">Expiration Date:</label>

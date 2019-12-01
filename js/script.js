@@ -1,32 +1,40 @@
 // Declare DOM elements using jquery
 
-    //Basic Info
-    const $inputName = $('#name');
-    const $userTitleSelectDropdown = $('#title');
-    const $otherTitleInput = $('#other-title');
+//Form
 
-    const $emailInput = $('fieldset #mail');
+const $formField = $('form');
 
-    //T-Shirt Info
-    const $designSelectDropdown = $('#design');
-    const $colorSelectDropdown = $('#color');
-    let $colorDropdownOptions = $('#color option');
+//Basic Info
+const $inputName = $('#name');
+const $userTitleSelectDropdown = $('#title');
+const $otherTitleInput = $('#other-title');
 
-    //Activities
-    const $fieldsetActivities = $('.activities');
-    const $checkBoxes = $('.activities input');
+const $emailInput = $('fieldset #mail');
 
-    //Payment Info
-    const $creditCardDiv = $('fieldset #credit-card');
+//T-Shirt Info
+const $designSelectDropdown = $('#design');
+const $colorSelectDropdown = $('#color');
+let $colorDropdownOptions = $('#color option');
 
-        // sub fields
-        const $creditCardNumberInput = $('fieldset #cc-num');
-        const $creditCardZipInput = $('fieldset #zip');
-        const $creditCardCvvInput = $('fieldset #cvv');
+//Activities
+const $fieldsetActivities = $('.activities');
+const $checkBoxes = $('.activities input');
 
-    const $paypalDiv = $('fieldset #paypal');
-    const $bitcoinDiv = $('fieldset #bitcoin');
-    const $paymentSelectDropdown = $('fieldset #payment');
+//Payment Info
+const $creditCardDiv = $('fieldset #credit-card');
+
+    // sub fields
+    const $creditCardNumberInput = $('fieldset #cc-num');
+    const $creditCardZipInput = $('fieldset #zip');
+    const $creditCardCvvInput = $('fieldset #cvv');
+
+const $paypalDiv = $('fieldset #paypal');
+const $bitcoinDiv = $('fieldset #bitcoin');
+const $paymentSelectDropdown = $('fieldset #payment');
+
+// Submit button
+
+const $submitButton = $('button');
 
 // Declare variables
 
@@ -35,7 +43,9 @@
     let dateString = '';
     let tempDateString = '';
     let costLabel = null;
+    let formOK = false;
 
+    let nameToolTipText = "Name field cannot contain numbers or special characters";
     let emailToolTipText = "Example: example@gmail.com";
     let ccNumToolTipText = "Must contain 13-16 numbers";
     let ccZipToolTipText = "Must contain 5 numbers";
@@ -45,7 +55,7 @@
     const regex = /Puns/i;
     const regex2 = /select/i;
 
-    const regexName = /[A-Z][a-z]/i;
+    const regexName = /^[A-Za-z ]+$/i;
     const regexEmail = /^[^@]+@[^@.]+\.[a-z]+$/i;
 
     const regexCCNum = /\b\d{13,16}\b/i;
@@ -54,23 +64,24 @@
 
 setupInitialView();
 
-   /***************************************************************************************************************
-      function setupInitialView
-      Parameters: N/A
-      returns: N/A
+/***************************************************************************************************************
+     function setupInitialView
+    Parameters: N/A
+    returns: N/A
 
-      Description: 
+    Description: 
 
-      Setup initial view setsup the user to start filling out the form quickly by putting focus on the first input
-      field of name. 
+    Setup initial view setsup the user to start filling out the form quickly by putting focus on the first input
+    field of name. 
 
-      It also hides specific fields not needed and creates the event listeners for the form elements that the user
-      will interact with.
+    It also hides specific fields not needed and creates the event listeners for the form elements that the user
+    will interact with.
 
-   ***************************************************************************************************************/
+***************************************************************************************************************/
 
 function setupInitialView()
 {
+
     // Make the name input field the focus on loading of webpage
     $inputName.focus();
 
@@ -85,6 +96,10 @@ function setupInitialView()
 
     // Add event listeners to select dropdowns
     
+        // Event listener for form submit
+
+        //$submitButton.on('submit', submitFormValidation(event));
+
         // Event listener for userTitleSelectDropdown
 
         $userTitleSelectDropdown.on('change' ,function(){
@@ -133,6 +148,7 @@ function setupInitialView()
 
         // Event listener for input fields
 
+        $inputName.on("input", createListener(isValidName));
         $emailInput.on("input", createListener(isValidEmail));
         $creditCardNumberInput.on("input", createListener(isValidCCNum));
         $creditCardZipInput.on("input", createListener(isValidZip));
@@ -140,6 +156,7 @@ function setupInitialView()
 
         // This event listener is used to redisplay the tool tip when the input gains focus
 
+        $inputName.on("focusin", onFocusListener(isValidName));
         $emailInput.on("focusin", onFocusListener(isValidEmail));
         $creditCardNumberInput.on("focusin", onFocusListener(isValidCCNum));
         $creditCardZipInput.on("focusin", onFocusListener(isValidZip));
@@ -147,6 +164,7 @@ function setupInitialView()
 
         // This event listener is used to hide the tool tip when the input loses focus
 
+        $inputName.on("focusout", offFocusListener());
         $emailInput.on("focusout", offFocusListener());
         $creditCardNumberInput.on("focusout", offFocusListener());
         $creditCardZipInput.on("focusout", offFocusListener());
@@ -176,16 +194,16 @@ function setupInitialView()
 
 }
 
-   /***************************************************************************************************************
-      function updateViewForOtherTitle
-      Parameters: showTitleInput - Boolean
-      returns: N/A
+/***************************************************************************************************************
+     function updateViewForOtherTitle
+    Parameters: showTitleInput - Boolean
+    returns: N/A
 
-      Description: 
+    Description: 
 
-      if showTitleInput is true, this code will display the Other Title input label and input text field.
+    if showTitleInput is true, this code will display the Other Title input label and input text field.
 
-   ***************************************************************************************************************/
+***************************************************************************************************************/
 
 function updateViewForOtherTitle(showTitleInput)
 {
@@ -204,16 +222,16 @@ function updateViewForOtherTitle(showTitleInput)
     }
 }
 
-   /***************************************************************************************************************
-      function updateColorSelectDropdown
-      Parameters: N/A
-      returns: N/A
+/***************************************************************************************************************
+     function updateColorSelectDropdown
+    Parameters: N/A
+    returns: N/A
 
-      Description: 
+    Description: 
 
-      This code will update the color selection dropdown based on the selection of the design dropdown list.
+    This code will update the color selection dropdown based on the selection of the design dropdown list.
 
-   ***************************************************************************************************************/
+***************************************************************************************************************/
 
 function updateColorSelectDropdown()
 {
@@ -304,16 +322,16 @@ function updateColorSelectDropdown()
 
 }
 
-   /***************************************************************************************************************
-      function updatePaymentInformation
-      Parameters: N/A
-      returns: N/A
+/***************************************************************************************************************
+     function updatePaymentInformation
+    Parameters: N/A
+    returns: N/A
 
-      Description: 
+    Description: 
 
-      This code will update the dislay with the selection from the user for the payment option.
+    This code will update the dislay with the selection from the user for the payment option.
 
-   ***************************************************************************************************************/
+***************************************************************************************************************/
 
 function updatePaymentInformation()
 {
@@ -349,41 +367,46 @@ function updatePaymentInformation()
 
 }
 
-   /***************************************************************************************************************
-      function showOrHideTip
-      Parameters: show - boolean
-                  element - dom element that is shown or not
-      returns: N/A
+/***************************************************************************************************************
+     function showOrHideTip
+    Parameters: show - boolean
+                element - dom element that is shown or not
+    returns: N/A
 
-      Description: 
+    Description: 
 
-      This code will show or hide the tool tip for the corresponding input
+    This code will show or hide the tool tip for the corresponding input
 
-   ***************************************************************************************************************/
+***************************************************************************************************************/
 
 function showOrHideTip(show, element) 
 {
-  // show element when show is true, hide when false
-  if (show) 
-  {
+// show element when show is true, hide when false
+if (show) 
+{
     element.style.display = "inline-block";
-  } 
-  else 
-  {
+} 
+else 
+{
     element.style.display = "none";
-  }
+}
 }
 
-   /***************************************************************************************************************
-      function multiple
-      Parameters: regex - regular expression
-      returns: N/A
+/***************************************************************************************************************
+     functions multiple
+    Parameters: regex - regular expression
+    returns: N/A
 
-      Description: 
+    Description: 
 
-      these functions will compare the input text vs the regex and see if it matches the pattern needed or not.
+    these functions will compare the input text vs the regex and see if it matches the pattern needed or not.
 
-   ***************************************************************************************************************/
+***************************************************************************************************************/
+
+    function isValidName(userName) 
+    {
+        return regexName.test(userName);
+    }
 
     function isValidEmail(email) 
     {
@@ -431,7 +454,11 @@ function showOrHideTip(show, element)
 
             } else 
             {
-                if (e.target.id === 'mail') 
+                if (e.target.id === 'name') 
+                {
+                    toolTipText = nameToolTipText;
+                }
+                else if (e.target.id === 'mail') 
                 {
                     toolTipText = emailToolTipText;
                 } 
@@ -480,10 +507,14 @@ function showOrHideTip(show, element)
 
             } else 
             {
-                if (e.target.id === 'mail') 
+                if (e.target.id === 'name') 
+                {
+                    toolTipText = nameToolTipText;
+                }
+                else if (e.target.id === 'mail') 
                 {
                     toolTipText = emailToolTipText;
-                } 
+                }  
                 else if (e.target.id === 'cc-num')
                 {
                     toolTipText = ccNumToolTipText;
@@ -514,20 +545,20 @@ function showOrHideTip(show, element)
         };
     }
 
-   /***************************************************************************************************************
-      function updateActivitiesEventSelections
-      Parameters: event - event 
-      returns: N/A
+/***************************************************************************************************************
+     function updateActivitiesEventSelections
+    Parameters: event - event 
+    returns: N/A
 
-      Description: 
+    Description: 
 
-      This function will update the activites event selection list based on the following:
+    This function will update the activites event selection list based on the following:
 
-      - if an activity is selected that has a conflicting activity the conflicting activity will be not selectable.
-      - as activities are selected, the running cost will be updated. 
-           * if the cost is zero the total is not displayed
+    - if an activity is selected that has a conflicting activity the conflicting activity will be not selectable.
+    - as activities are selected, the running cost will be updated. 
+        * if the cost is zero the total is not displayed
 
-   ***************************************************************************************************************/
+***************************************************************************************************************/
 
 function updateActivitiesEventSelections(event)
 {
@@ -588,7 +619,173 @@ function updateActivitiesEventSelections(event)
             
         }
     }
+
+    checkCostValue();
 }
 
+/***************************************************************************************************************
+     function checkCostValue
+    Parameters: N/A
+    returns: N/A
+
+    Description: 
+
+    This function will check the cost value to see if the user selected an activity to attend to. If not then
+    it will make the border red to indicate to the user that there is an error in that section of the form.
+
+***************************************************************************************************************/
+
+function checkCostValue()
+{
+    if (activityCost === 0)
+    {
+        $fieldsetActivities.css('border', 'solid 3px red');
+    }
+    else
+    {
+        $fieldsetActivities.css('border', 'none');
+    }
+}
+
+/***************************************************************************************************************
+     function form on submit
+    Parameters: N/A
+    returns: N/A
+
+    Description: 
+
+    This will check to see if the form has the appropriate fields with data. If not it will display an alert message
+    to the user and indicate to the user on the page which fields need input.
+
+***************************************************************************************************************/
+
+$('form').on("submit", function(e){
+
+    // if form is not ok then block submit
+
+    if (!formOK) 
+    {
+        e.preventDefault();
+    }
+
+    // initialize alert message
+
+    let alertMessageText = '';
+
+    // Check name field is valid
+
+    if (!isValidName($inputName.val())) 
+    {
+        alertMessageText += '- Name is not valid. Please enter a valid name without numbers or special characters.';
+        $inputName.css('background-color', '#fd9898');
+    }
+
+    // check email field is valid
+
+    if (!isValidEmail($emailInput.val())) 
+    {
+        $emailInput.css('background-color', '#fd9898');
+
+        if (alertMessageText === '') 
+        {
+            alertMessageText += '- Email is not valid. Please enter a valid email address.';    
+        }
+        else
+        {
+            alertMessageText += '\n\n- Email is not valid. Please enter a valid email address.';
+        }
+        
+    }
+
+    //check to see if user selected an activity to attend
+
+    if (activityCost === 0) 
+    {
+        if (alertMessageText === '') 
+        {
+            alertMessageText += '- Please select an activity to attend during the conference.';    
+        }
+        else
+        {
+            alertMessageText += '\n\n- Please select an activity to attend during the conference.';
+        }
+
+        checkCostValue();
+    }
+
+    // Check to see the payment method. if Credit Card is selected check the credit card fields for proper format
+
+    var optionText = $("#payment option:selected").text();
+
+    if (optionText === "Credit Card") 
+    {
+        if (!isValidCCNum($creditCardNumberInput.val())) 
+        {
+
+            $creditCardNumberInput.css('background-color', '#fd9898');
+
+            if (alertMessageText === '') 
+            {
+                alertMessageText += '- Credit card number is invalid. It must be between 13 and 16 numbers.';
+            }
+            else
+            {
+                alertMessageText += '\n\n- Credit card number is invalid. It must be between 13 and 16 numbers.';
+            }
+            
+        }
+
+        if (!isValidCCV($creditCardCvvInput.val())) 
+        {
+
+            $creditCardCvvInput.css('background-color', '#fd9898');
+            
+            if (alertMessageText === '') 
+            {
+                alertMessageText += '- Credit card ccv is invalid. It must be 3 numbers.';
+            } 
+            else 
+            {
+                alertMessageText += '\n\n- Credit card ccv is invalid. It must be 3 numbers.';
+            }
+            
+        }
+
+        if (!isValidZip($creditCardZipInput.val())) 
+        {
+
+            $creditCardZipInput.css('background-color', '#fd9898');
+
+            if (alertMessageText === '') 
+            {
+                alertMessageText += '- Credit card zip is invalid. It must be 5 numbers.';
+            } 
+            else 
+            {
+                alertMessageText += '\n\n- Credit card zip is invalid. It must be 5 numbers.';
+            }
+            
+        }
+
+        
+    }
+
+    // check to see if any of the needed fields are invalid
+
+    if (alertMessageText === '') 
+    {
+        // form is ok initiate submit
+
+        formOK = true;
+        $(this)[0].submit();
+    } 
+    else 
+    {
+        // form is not ok display alert message with missing fields
+
+        alert(alertMessageText);
+    }
+
+});
 
 
